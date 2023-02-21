@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.1](https://github.com/envyafish/mr_plugins/compare/v1.0.0...v1.0.1) (2023-02-21)
+
+
+### Bug Fixes
+
+* 添加站点 ([f00989a](https://github.com/envyafish/mr_plugins/commit/f00989a28d350b2bb5982a109129479af246514a))
+
 ## 1.0.0 (2023-02-21)
 
 
