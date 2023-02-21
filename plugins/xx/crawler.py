@@ -3,6 +3,7 @@ from typing import List
 import requests
 from pyquery import PyQuery as pq
 
+from plugins.xx.logger import Logger
 from plugins.xx.exceptions import CloudFlareError
 from plugins.xx.utils import *
 from plugins.xx.models import Course, Teacher
@@ -60,10 +61,9 @@ class JavBus:
         self.proxies = proxies
         if 'existmag' not in self.cookie:
             self.cookie = f"existmag=all; {self.cookie}"
-        else:
-            self.cookie = self.cookie.replace('existmag=mag', 'existmag=all')
-        self.cookie_dict = str_cookies_to_dict(cookie)
-        self.headers = {'cookie': cookie, 'Referer': self.hosts[0]}
+        self.cookie = self.cookie.replace('existmag=mag', 'existmag=all')
+        self.cookie_dict = str_cookies_to_dict(self.cookie)
+        self.headers = {'cookie': self.cookie, 'Referer': self.hosts[0]}
         if ua:
             self.headers['User-Agent'] = ua
 
@@ -202,15 +202,7 @@ class JavBus:
                     lambda x: date_str_to_timestamp(x['date']) >= start_date_timestamp and
                     'VR' not in x['code'],
                     code_list))
-            new_list = []
-            for item in filter_list:
-                teacher_list = self.get_teachers(item['code'])
-                teacher_num = None
-                if teacher_list:
-                    teacher_num = len(teacher_list)
-                if teacher_num and teacher_num < 4:
-                    new_list.append(item['code'])
-            return new_list
+            return [item['code'] for item in filter_list]
         return []
 
     def get_teachers(self, code: str):

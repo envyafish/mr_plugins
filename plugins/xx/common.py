@@ -37,21 +37,29 @@ def sync_new_course_thread(teacher: Teacher):
     library, bus = get_crawler()
     notify = Notify(config)
     course_code_list = bus.crawling_teacher_courses(teacher.code, teacher.limit_date)
+    Logger.error(f"{teacher.name}在{teacher.limit_date}之后教授的课程有如下:\n{course_code_list.join(',')}")
     if course_code_list:
         for code in course_code_list:
             row = course_db.get_course_by_code(code)
+            if row and row.status > 0:
+                continue
             if row and row.status == 0:
                 row.status = 1
                 row.sub_type = 2
                 row = course_db.update_course(row)
                 notify.push_new_course(teacher=teacher, course=row)
-            else:
-                course = bus.search_code(code)
-                if course:
-                    course.status = 1
-                    course.sub_type = 2
-                    course = course_db.add_course(course)
-                    notify.push_new_course(teacher=teacher, course=course)
+                continue
+            course = bus.search_code(code)
+            if course:
+                casts = course.casts
+                cast_list = casts.split(',')
+                if len(cast_list) > 4:
+                    Logger.info(f"课程{course.code}同时存在超过4名老师,小明无法承受,所以跳过订阅此课程")
+                    continue
+                course.status = 1
+                course.sub_type = 2
+                course = course_db.add_course(course)
+                notify.push_new_course(teacher=teacher, course=course)
 
 
 def get_crawler():
