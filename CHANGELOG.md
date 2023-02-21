@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.0.3](https://github.com/envyafish/mr_plugins/compare/v1.0.2...v1.0.3) (2023-02-21)
+
+
+### Bug Fixes
+
+* bug修复 ([9c3cb21](https://github.com/envyafish/mr_plugins/commit/9c3cb21eeea551fc990492ba0854d4750b0fe386))
+* 修复打印日志BUG ([cd009ac](https://github.com/envyafish/mr_plugins/commit/cd009ace749e64daa88e1b8d9a674997d2af6797))
+
 ### [1.0.2](https://github.com/envyafish/mr_plugins/compare/v1.0.1...v1.0.2) (2023-02-21)
 
 
