@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.2](https://github.com/envyafish/mr_plugins/compare/v1.0.1...v1.0.2) (2023-02-21)
+
+
+### Bug Fixes
+
+* 分割UI ([7c5e4fa](https://github.com/envyafish/mr_plugins/commit/7c5e4fa02328cdd822fbc9a650c48a0c2df359a6))
+
 ### [1.0.1](https://github.com/envyafish/mr_plugins/compare/v1.0.0...v1.0.1) (2023-02-21)
 
 
