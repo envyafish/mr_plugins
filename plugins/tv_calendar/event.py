@@ -8,9 +8,7 @@ from typing import Dict, Any
 from moviebotapi.common import MenuItem
 from moviebotapi.core.models import MediaType
 from moviebotapi.subscribe import SubStatus, Subscribe
-from moviebotapi.site import Site
 
-import shutil
 from mbot.openapi import mbot_api
 from mbot.core.plugins import *
 
