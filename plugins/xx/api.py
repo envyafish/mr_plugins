@@ -46,7 +46,7 @@ def route_view(view):
 @bp.route('/sites', methods=["GET"])
 @login_required()
 def exist_site_list():
-    xx_site_list = ['mteam', 'exoticaz', 'nicept', 'pttime']
+    xx_site_list = ['mteam', 'exoticaz', 'nicept', 'pttime', 'hdbd']
     site_list = mbot_api.site.list()
     filter_list = []
     for site in site_list:
