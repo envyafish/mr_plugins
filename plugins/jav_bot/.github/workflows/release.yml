@@ -1,0 +1,31 @@
+on:
+  push:
+    branches:
+      - master
+
+name: Release
+
+permissions: write-all
+
+
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Release-PR
+      uses: google-github-actions/release-please-action@v3
+      with:
+        release-type: simple
+        token: ${{ secrets.RELEASE_TOKEN }}
+        pull-request-title-pattern: "chore${scope}: release ${version}"
+        extra-files: manifest.json
+
+    - name: Release-latest
+      uses: softprops/action-gh-release@v1
+      if: "!startsWith(github.ref, 'refs/tags/')"
+      with:
+        tag_name: latest

@@ -1,0 +1,58 @@
+{
+  "id": 14,
+  "name": "tv_calendar",
+  "title": "剧集日历",
+  "author": "oreki",
+  "description": "每日更新推送;追剧日历",
+  "version": "1.2",
+  "requirements": [],
+  "configField": [
+    {
+      "fieldName": "uid",
+      "fieldType": "Enum",
+      "label": "推送用户",
+      "helperText": "选择接收推送的用户,用户管理要独立设置推送配置才生效",
+      "enumValuesRef": "UserList",
+      "multiValue": true
+    },
+    {
+      "fieldName": "media_server_enable",
+      "fieldType": "Bool",
+      "label": "媒体库数据",
+      "helperText": "加载页面会读取媒体库数据，导致加载缓慢，但同时会展示更多数据",
+      "defaultValue": false
+    },
+    {
+      "fieldName": "banner_enable",
+      "fieldType": "Bool",
+      "label": "banner",
+      "helperText": "是否展示Banner取决于你",
+      "defaultValue": false
+    },
+    {
+      "fieldName": "offset",
+      "fieldType": "String",
+      "label": "时间跨度",
+      "helperText": "想看多少天的日历，就填多少",
+      "defaultValue": "7"
+    },
+    {
+      "fieldName": "title",
+      "fieldType": "String",
+      "label": "标题",
+      "helperText": "推送通知标题模板",
+      "defaultValue": "今日剧集已更新 共{tv_total}部"
+    },
+    {
+      "fieldName": "content",
+      "fieldType": "String",
+      "label": "内容",
+      "helperText": "推送通知内容模板",
+      "defaultValue": "{tv_name} 第{season}季 第{episodes}集"
+    }
+  ],
+  "logoUrl": "/plugins/tv_calendar/logo.jpg",
+  "githubUrl": null,
+  "helpDocUrl": "",
+  "dependencies": null
+}
