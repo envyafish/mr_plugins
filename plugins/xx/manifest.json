@@ -1,0 +1,15 @@
+{
+  "name": "xx",
+  "title": "XX",
+  "author": "oreki",
+  "description": "xxxxxxxxx",
+  "_comment_start": "x-release-please-start-version",
+  "version": "1.0.0",
+  "_comment_end": "x-release-please-end",
+  "requirements": [],
+  "configField": [],
+  "logoUrl": "",
+  "githubUrl": "/api/plugins/xx",
+  "helpDocUrl": "/api/plugins/xx",
+  "dependencies": null
+}
