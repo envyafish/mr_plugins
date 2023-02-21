@@ -37,7 +37,7 @@ def sync_new_course_thread(teacher: Teacher):
     library, bus = get_crawler()
     notify = Notify(config)
     course_code_list = bus.crawling_teacher_courses(teacher.code, teacher.limit_date)
-    Logger.error(f"{teacher.name}在{teacher.limit_date}之后教授的课程有如下:\n{course_code_list.join(',')}")
+    Logger.error(f"{teacher.name}在{teacher.limit_date}之后教授的课程有如下:\n{','.join(course_code_list)}")
     if course_code_list:
         for code in course_code_list:
             row = course_db.get_course_by_code(code)
