@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine, or_, func
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -25,6 +27,19 @@ class CourseDB:
 
     def __init__(self, session: Session):
         self.session = session
+
+    @contextmanager
+    def session_scope(self):
+        temp_session = self.session
+        try:
+            yield temp_session
+            temp_session.commit()
+        except Exception as e:
+            temp_session.rollback()
+            Logger.error(repr(SqlError))
+            raise
+        finally:
+            temp_session.flush()
 
     def get_course_by_primary(self, primary: int):
         return self.session.query(Course).filter_by(id=primary).first()
@@ -60,40 +75,28 @@ class CourseDB:
         course = self.session.query(Course).filter_by(code=data.code).first()
         if course:
             return course
-        try:
+        with self.session_scope() as session:
             data.create_time = get_current_datetime_str()
-            self.session.add(data)
-            self.session.commit()
+            session.add(data)
+            session.commit()
             return data
-        except Exception as e:
-            Logger.error(repr(e))
-            self.session.rollback()
-            raise SqlError
 
     def update_course(self, data: Course):
         course = self.session.query(Course).filter_by(id=data.id).first()
         if not course:
             return None
-        try:
+        with self.session_scope() as session:
             data.update_time = get_current_datetime_str()
             copy_properties(data, course)
-            self.session.commit()
+            session.commit()
             return course
-        except Exception as e:
-            Logger.error(repr(e))
-            self.session.rollback()
-            raise SqlError
 
     def delete_course(self, primary: int):
         course = self.get_course_by_primary(primary)
         if course:
-            try:
-                self.session.delete(course)
-                self.session.commit()
-            except Exception as e:
-                Logger.error(repr(e))
-                self.session.rollback()
-                raise SqlError
+            with self.session_scope() as session:
+                session.delete(course)
+                session.commit()
 
 
 class TeacherDB:
@@ -101,6 +104,19 @@ class TeacherDB:
 
     def __init__(self, session: Session):
         self.session = session
+
+    @contextmanager
+    def session_scope(self):
+        temp_session = self.session
+        try:
+            yield temp_session
+            temp_session.commit()
+        except Exception as e:
+            temp_session.rollback()
+            Logger.error(repr(SqlError))
+            raise
+        finally:
+            temp_session.flush()
 
     def get_teacher_by_primary(self, primary: int):
         return self.session.query(Teacher).filter_by(id=primary).first()
@@ -121,44 +137,45 @@ class TeacherDB:
         teacher = self.session.query(Teacher).filter_by(code=data.code).first()
         if teacher:
             return teacher
-        try:
+        with self.session_scope() as session:
             data.create_time = get_current_datetime_str()
-            self.session.add(data)
-            self.session.commit()
+            session.add(data)
+            session.commit()
             return data
-        except Exception as e:
-            Logger.error(repr(e))
-            self.session.rollback()
-            raise SqlError
 
     def update_teacher(self, data: Teacher):
         teacher = self.session.query(Teacher).filter_by(id=data.id).first()
         if not teacher:
             return None
-        try:
+        with self.session_scope() as session:
             data.update_time = get_current_datetime_str()
             copy_properties(data, teacher)
-            self.session.commit()
+            session.commit()
             return teacher
-        except Exception as e:
-            Logger.error(repr(e))
-            self.session.rollback()
-            raise SqlError
 
     def delete_teacher(self, primary: int):
         teacher = self.get_teacher_by_primary(primary)
         if teacher:
-            try:
-                self.session.delete(teacher)
-                self.session.commit()
-            except Exception as e:
-                Logger.error(repr(e))
-                self.session.rollback()
-                raise SqlError
+            with self.session_scope() as session:
+                session.delete(teacher)
+                session.commit()
 
 
 class ConfigDB:
     session: Session
+
+    @contextmanager
+    def session_scope(self):
+        temp_session = self.session
+        try:
+            yield temp_session
+            temp_session.commit()
+        except Exception as e:
+            temp_session.rollback()
+            Logger.error(repr(SqlError))
+            raise
+        finally:
+            temp_session.flush()
 
     def __init__(self, session: Session):
         self.session = session
@@ -168,15 +185,11 @@ class ConfigDB:
 
     def update_config(self, data):
         config = self.session.query(Config).first()
-        try:
+        with self.session_scope() as session:
             if config:
                 copy_properties(data, config)
-                self.session.commit()
+                session.commit()
                 return config
             else:
-                self.session.add(data)
-                self.session.commit()
-        except Exception as e:
-            Logger.error(repr(e))
-            self.session.rollback()
-            raise SqlError
+                session.add(data)
+                session.commit()
