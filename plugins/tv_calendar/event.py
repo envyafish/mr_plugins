@@ -48,7 +48,7 @@ def get_latest_jpg(dir):
     path_list = [os.path.join(dir, filename) for filename in filename_list]
     for path in path_list:
         file_info = os.stat(path)
-        ctime = file_info.st_ctime
+        ctime = file_info.st_mtime
         if ctime > latest_time:
             latest_time = ctime
             hit_path = path
