@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.4](https://github.com/envyafish/mr_plugins/compare/v1.0.3...v1.0.4) (2023-02-22)
+
+
+### Bug Fixes
+
+* 优化多线程的情况下 sql出现异常 ([dc82675](https://github.com/envyafish/mr_plugins/commit/dc82675b6f28fa5dd1c6c7f175e978a99bcf2ef6))
+
 ### [1.0.3](https://github.com/envyafish/mr_plugins/compare/v1.0.2...v1.0.3) (2023-02-21)
 
 
