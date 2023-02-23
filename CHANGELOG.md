@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.1](https://github.com/envyafish/mr_plugins/compare/v1.1.0...v1.1.1) (2023-02-23)
+
+
+### Bug Fixes
+
+* bug fix ([cf55093](https://github.com/envyafish/mr_plugins/commit/cf5509373cd19e9f2cea5173e725a7e84b46b936))
+
 ## [1.1.0](https://github.com/envyafish/mr_plugins/compare/v1.0.4...v1.1.0) (2023-02-23)
 
 
