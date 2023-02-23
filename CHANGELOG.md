@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.2](https://github.com/envyafish/mr_plugins/compare/v1.1.1...v1.1.2) (2023-02-23)
+
+
+### Bug Fixes
+
+* 让代码更优雅 ([cca7704](https://github.com/envyafish/mr_plugins/commit/cca7704fb061a08d9e245aecbaf8546a2e693fbf))
+
 ### [1.1.1](https://github.com/envyafish/mr_plugins/compare/v1.1.0...v1.1.1) (2023-02-23)
 
 
