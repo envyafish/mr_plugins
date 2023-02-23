@@ -1,3 +1,4 @@
+import datetime
 import os.path
 import shutil
 from typing import Dict, Any
@@ -9,7 +10,8 @@ from plugins.xx.db import get_course_db, get_teacher_db, get_config_db
 from plugins.xx.download_client import DownloadClient
 from plugins.xx.notify import Notify
 from plugins.xx.site import Site
-from plugins.xx.common import sync_new_course, check_config
+from plugins.xx.common import sync_new_course, check_config, download_once
+from plugins.xx.utils import date_str_to_timestamp
 
 course_db = get_course_db()
 teacher_db = get_teacher_db()
@@ -87,3 +89,17 @@ def sync_new_course_task():
     if teachers:
         for teacher in teachers:
             sync_new_course(teacher)
+
+
+@plugin.task('download_un_download', '下载未下载', cron_expression='0 22 * * *')
+def download_un_download():
+    Logger.info("开始搜索可下载的课程")
+    course_list = course_db.list_course(status=1)
+    for course in course_list:
+        release_date = course.release_date
+        release_date_timestamp = date_str_to_timestamp(release_date)
+        today_timestamp = int(datetime.date.strftime('%Y%m%d'))
+        if release_date_timestamp < today_timestamp + 7:
+            download_once(course)
+        else:
+            Logger.info(f"课程{course.code}发售日期尚远,跳过资源搜索")

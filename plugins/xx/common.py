@@ -3,10 +3,11 @@ import threading
 from plugins.xx.db import get_course_db, get_teacher_db, get_config_db
 from plugins.xx.crawler import JavLibrary, JavBus
 from plugins.xx.download_client import DownloadClient
-from plugins.xx.models import Teacher
+from plugins.xx.models import Teacher, Course
 from plugins.xx.notify import Notify
 from plugins.xx.site import Site
 from plugins.xx.logger import Logger
+from plugins.xx.course_queue import get_course, put_course
 
 course_db = get_course_db()
 teacher_db = get_teacher_db()
@@ -59,6 +60,7 @@ def sync_new_course_thread(teacher: Teacher):
                 course.status = 1
                 course.sub_type = 2
                 course = course_db.add_course(course)
+                download_once(course)
                 notify.push_new_course(teacher=teacher, course=course)
 
 
@@ -80,27 +82,30 @@ def get_crawler():
 
 # 避免批量操作
 def download_once(course):
-    t = threading.Thread(target=download_thread, args=(course,))
+    put_course(course)
+    t = threading.Thread(target=download_thread)
     t.start()
 
 
-def download_thread(course):
-    row = course_db.get_course_by_primary(course.id)
-    if row:
-        config = config_db.get_config()
-        site = Site(config)
-        client = DownloadClient(config)
-        notify = Notify(config)
-        torrent = site.get_remote_torrent(course.code)
-        if torrent:
-            torrent_path = site.download_torrent(course.code, torrent)
-            if torrent_path:
-                download_status = client.download_from_file(torrent_path, config.download_path, config.category)
-                if download_status:
-                    course.status = 2
-                    course_db.update_course(course)
-                    notify.push_downloading(course, torrent)
-                else:
-                    Logger.error(f"下载课程:添加番号{course.code}下载失败")
-    else:
-        Logger.error(f"下载课程:番号{course.code}不存在数据库")
+def download_thread():
+    course = get_course()
+    if course:
+        row = course_db.get_course_by_primary(course.id)
+        if row:
+            config = config_db.get_config()
+            site = Site(config)
+            client = DownloadClient(config)
+            notify = Notify(config)
+            torrent = site.get_remote_torrent(course.code)
+            if torrent:
+                torrent_path = site.download_torrent(course.code, torrent)
+                if torrent_path:
+                    download_status = client.download_from_file(torrent_path, config.download_path, config.category)
+                    if download_status:
+                        course.status = 2
+                        course_db.update_course(course)
+                        notify.push_downloading(course, torrent)
+                    else:
+                        Logger.error(f"下载课程:添加番号{course.code}下载失败")
+        else:
+            Logger.error(f"下载课程:番号{course.code}不存在数据库")
