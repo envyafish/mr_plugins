@@ -1,5 +1,6 @@
 import datetime
 import os
+import shutil
 import typing
 import random
 import time
@@ -56,22 +57,21 @@ def get_latest_jpg(dir):
 
 
 def link(src, dst):
-    if os.path.exists(dst):
-        os.remove(dst)
-    try:
-        os.link(src, dst)
-    except Exception as e:
-        os.symlink(src, dst)
+    shutil.copyfile(src, dst)
 
 
 def link_resource():
     tv_calendar_path = '/app/frontend/static/tv_calendar.html'
     episode_path = '/app/frontend/static/episode.html'
-    bg_path = '/app/frontend/static/bg.png'
+    bg_path = '/app/frontend/static/bg.jpg'
     link('/data/plugins/tv_calendar/frontend/tv_calendar.html', tv_calendar_path)
     link('/data/plugins/tv_calendar/frontend/episode.html', episode_path)
-    banner_path = get_latest_jpg('/data/plugins/tv_calendar/cmct-images')
-    link(banner_path, bg_path)
+    banner_path = get_latest_jpg('/data/cmct-images')
+    _LOGGER.info(banner_path)
+    if banner_path:
+        link(banner_path, bg_path)
+    else:
+        link('/data/plugins/tv_calendar/frontend/default.jpg', bg_path)
 
 
 @plugin.after_setup
@@ -424,12 +424,12 @@ def grab_ssd_banner(cookies, ua):
     banner_img_url = soup.select('img.banner-image')[0].get('src')
     img_split_list = banner_img_url.split('/')
     img_name = img_split_list[len(img_split_list) - 1]
-    path = f'/data/plugins/tv_calendar/cmct-images/{img_name}'
+    path = f'/data/cmct-images/{img_name}'
     if os.path.exists(path):
         _LOGGER.info("已存在该banner,跳过图片下载")
         return
     save_web_img(banner_img_url, path=path, ua=ua)
-    des_path = '/app/frontend/static/bg.png'
+    des_path = '/app/frontend/static/bg.jpg'
     link(path, des_path)
 
 
@@ -438,8 +438,9 @@ def save_web_img(url, path, ua):
     if ua:
         headers['User-Agent'] = ua
     res = requests.get(url, headers=headers)
-    cmct_folder = '/data/plugins/tv_calendar/cmct-images'
+    cmct_folder = '/data/cmct-images'
     if not os.path.exists(cmct_folder):
         os.makedirs(cmct_folder)
     with open(path, 'wb') as banner_img:
         banner_img.write(res.content)
+        banner_img.flush()
