@@ -98,8 +98,11 @@ def download_un_download():
     for course in course_list:
         release_date = course.release_date
         release_date_timestamp = date_str_to_timestamp(release_date)
-        today_timestamp = int(datetime.date.strftime('%Y%m%d'))
+        today_timestamp = int(datetime.datetime.now().strftime('%Y%m%d'))
         if release_date_timestamp < today_timestamp + 7:
             download_once(course)
         else:
             Logger.info(f"课程{course.code}发售日期尚远,跳过资源搜索")
+
+
+
