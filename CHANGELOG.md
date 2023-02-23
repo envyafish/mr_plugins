@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/envyafish/mr_plugins/compare/v1.0.4...v1.1.0) (2023-02-23)
+
+
+### Features
+
+* 1.订阅老师之后 会立刻搜索订阅的课程 ([899d0dc](https://github.com/envyafish/mr_plugins/commit/899d0dca36cadc99e8c20cd972fc3957d4ab0dec))
+
+
+### Bug Fixes
+
+* bug fix ([0ea1442](https://github.com/envyafish/mr_plugins/commit/0ea14427040ef075ca088936c0de6be60e441706))
+* sql bug修复 ([7505d71](https://github.com/envyafish/mr_plugins/commit/7505d710830c66558626bba7a8ed75c107b06f62))
+
 ### [1.0.4](https://github.com/envyafish/mr_plugins/compare/v1.0.3...v1.0.4) (2023-02-22)
 
 
