@@ -43,6 +43,8 @@ content = '{tv_name} 第{season}季 第{episodes}集'
 
 
 def get_latest_jpg(dir):
+    if not os.path.exists(dir):
+        return None
     filename_list = os.listdir(dir)
     latest_time = 0
     hit_path = ''
@@ -57,6 +59,8 @@ def get_latest_jpg(dir):
 
 
 def link(src, dst):
+    if os.path.exists(dst):
+        os.remove(dst)
     shutil.copyfile(src, dst)
 
 
