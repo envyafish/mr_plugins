@@ -1,4 +1,6 @@
 import os.path
+import random
+import time
 from typing import List
 
 import requests
@@ -10,8 +12,14 @@ from plugins.xx.exceptions import ConfigInitError
 from plugins.xx.logger import Logger
 from plugins.xx.models import Config
 from mbot.openapi import mbot_api
+from pyrate_limiter import Duration, RequestRate, Limiter
 
 config_db = get_config_db()
+
+# 一分钟请求一次站点
+rate_limits = ([RequestRate(1, Duration.MINUTE)])
+
+limiter = Limiter(*rate_limits)
 
 
 class Site:
@@ -37,7 +45,10 @@ class Site:
             return sort_torrents[0]
         return None
 
+    @limiter.ratelimit('site_search', delay=True)
     def get_remote_torrent(self, code):
+        time.sleep(random.randint(1, 20))
+        Logger.info(f"从PT站点搜索{code}的学习资料")
         torrents = self.search_remote_torrents(code)
         filter_torrents = self.filter_torrents(torrents)
         sort_torrents = self.sort_torrents(filter_torrents)
@@ -151,4 +162,3 @@ class Site:
                 torrent.write(res.content)
                 torrent.flush()
             return torrent_path
-

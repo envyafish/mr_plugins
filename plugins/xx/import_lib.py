@@ -2,7 +2,7 @@ import os
 from importlib import import_module
 
 import_list = [
-    # 'pyquery'
+    'pyrate-limiter'
 ]
 # 判断依赖库是否安装,未安装则安装对应依赖库
 sourcestr = "https://pypi.tuna.tsinghua.edu.cn/simple/"  # 镜像源
