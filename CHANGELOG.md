@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.3](https://github.com/envyafish/mr_plugins/compare/v1.1.2...v1.1.3) (2023-02-24)
+
+
+### Bug Fixes
+
+* 手动取消订阅的课程，不再自动订阅 ([76d66a6](https://github.com/envyafish/mr_plugins/commit/76d66a614b57e9e80e60eb438f21c241484250f8))
+
 ### [1.1.2](https://github.com/envyafish/mr_plugins/compare/v1.1.1...v1.1.2) (2023-02-23)
 
 
