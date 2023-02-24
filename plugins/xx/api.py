@@ -143,7 +143,9 @@ def list_teacher():
 @login_required()
 def delete_course():
     course_id = request.args.get('id')
-    course_db.delete_course(int(course_id))
+    course = course_db.get_course_by_primary(int(course_id))
+    course.status = -1
+    course_db.update_course(course)
     return Result.success(None)
 
 
@@ -164,11 +166,10 @@ def add_course():
     course = Course(data)
     config = config_db.get_config()
     notify = Notify(config)
-    course.status = 1
-    course.sub_type = 1
+
     row = course_db.get_course_by_code(course.code)
     if row:
-        if row.status == 0:
+        if row.status <= 0:
             row.status = 1
             row.sub_type = 1
             course_db.update_course(row)
@@ -177,6 +178,8 @@ def add_course():
             return Result.success(None)
         else:
             return Result.fail("已订阅的课程")
+    course.status = 1
+    course.sub_type = 1
     course = course_db.add_course(course)
     notify.push_subscribe_course(course)
     download_once(course)

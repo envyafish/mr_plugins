@@ -43,6 +43,9 @@ def sync_new_course_thread(teacher: Teacher):
             row = course_db.get_course_by_code(code)
             if row and row.status > 0:
                 continue
+            #     手动取消订阅的课程,在更新老师课程的时候 不会再次订阅
+            if row and row.status == -1:
+                continue
             if row and row.status == 0:
                 row.status = 1
                 row.sub_type = 2
