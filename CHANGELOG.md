@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/envyafish/mr_plugins/compare/v1.1.3...v1.2.0) (2023-03-07)
+
+
+### Features
+
+* 新订阅的课程将展示样片图片 ([c1f18d4](https://github.com/envyafish/mr_plugins/commit/c1f18d4a22eeacb07fe9713d447e4a48c781481d))
+
 ### [1.1.3](https://github.com/envyafish/mr_plugins/compare/v1.1.2...v1.1.3) (2023-02-24)
 
 
