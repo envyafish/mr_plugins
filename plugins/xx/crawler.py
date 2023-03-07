@@ -81,10 +81,10 @@ class JavBus:
         doc = pq(res.text)
         page_title = doc('head>title').text()
         if page_title.startswith(code):
-            sample_img_elements = doc('a.sample-box>div>img')
+            sample_img_elements = doc('a.sample-box')
             sample_img_list = []
             for img in sample_img_elements.items():
-                sample_img_list.append(img.attr('src'))
+                sample_img_list.append(img.attr('href'))
             still_photo = ','.join(sample_img_list)
             info = doc('div.info')
             if info:
