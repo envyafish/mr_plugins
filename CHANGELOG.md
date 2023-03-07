@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.2.1](https://github.com/envyafish/mr_plugins/compare/v1.2.0...v1.2.1) (2023-03-07)
+
+
+### Bug Fixes
+
+* 替换高清图 ([8301a70](https://github.com/envyafish/mr_plugins/commit/8301a702c82c85c7d795df0259453ca41ac835d0))
+
 ## [1.2.0](https://github.com/envyafish/mr_plugins/compare/v1.1.3...v1.2.0) (2023-03-07)
 
 
