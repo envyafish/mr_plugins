@@ -30,7 +30,7 @@ class JavLibrary:
     def crawling_top20(self, page):
         code_list = []
         res = requests.get(url=f'{self.top20_url}{page}', proxies=self.proxies, cookies=self.cookie_dict,
-                               headers=self.headers)
+                           headers=self.headers)
         doc = pq(res.text)
         page_title = doc('head>title').text()
         if page_title.startswith('最想要的影片'):
@@ -81,6 +81,11 @@ class JavBus:
         doc = pq(res.text)
         page_title = doc('head>title').text()
         if page_title.startswith(code):
+            sample_img_elements = doc('a.sample-box>div>img')
+            sample_img_list = []
+            for img in sample_img_elements.items():
+                sample_img_list.append(img.attr('src'))
+            still_photo = ','.join(sample_img_list)
             info = doc('div.info')
             if info:
                 release_date = ''
@@ -117,7 +122,7 @@ class JavBus:
                 course = Course({'code': code, 'title': title, 'release_date': release_date, 'duration': duration,
                                  'producer': producer, 'publisher': publisher,
                                  'series': series, 'genres': ','.join(genre_list), 'casts': ','.join(cast_list),
-                                 'poster': poster, 'banner': banner})
+                                 'poster': poster, 'banner': banner, 'still_photo': still_photo})
                 return course
         return None
 
@@ -200,7 +205,7 @@ class JavBus:
             filter_list = list(
                 filter(
                     lambda x: date_str_to_timestamp(x['date']) >= start_date_timestamp and
-                    'VR' not in x['code'],
+                              'VR' not in x['code'],
                     code_list))
             return [item['code'] for item in filter_list]
         return []

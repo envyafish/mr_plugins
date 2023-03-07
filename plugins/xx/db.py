@@ -1,6 +1,7 @@
 from plugins.xx.orm import DB, CourseDB, TeacherDB, ConfigDB
 
 db = DB()
+db.sync_database()
 
 
 def get_course_db() -> CourseDB:

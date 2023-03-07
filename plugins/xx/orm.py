@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, or_, func
+from sqlalchemy import create_engine, or_, func, text
 from sqlalchemy.orm import sessionmaker, Session
 
 from plugins.xx.exceptions import SqlError
@@ -17,6 +17,19 @@ class DB:
 
     def get_session(self):
         return sessionmaker(bind=self.engine)()
+
+    def sync_database(self):
+        Logger.info("开始同步数据库表")
+        sql = 'pragma table_info(course)'
+        session = self.get_session()
+        res = session.execute(text(sql)).fetchall()
+        columns = [item[1] for item in res]
+        if 'still_photo' not in columns:
+            Logger.info("course表缺少字段<still_photo>,开始修改表结构")
+            new_column_still_photo_sql = 'alter table course add still_photo text'
+            session.execute(text(new_column_still_photo_sql))
+            session.commit()
+            session.flush()
 
 
 class CourseDB:
