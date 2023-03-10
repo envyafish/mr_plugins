@@ -49,6 +49,7 @@ class CourseDB:
         offset = (page - 1) * self.limit
         query = self.session.query(Course)
         if keyword:
+            keyword = keyword.upper()
             rule = or_(Course.code.like(f"%{keyword}%"), Course.casts.like(f"%{keyword}%"))
             query = query.filter(rule)
         if status:
