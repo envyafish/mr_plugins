@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.2.2](https://github.com/envyafish/mr_plugins/compare/v1.2.1...v1.2.2) (2023-03-10)
+
+
+### Bug Fixes
+
+* 优化课程列表的关键字搜索 ([de7f6a3](https://github.com/envyafish/mr_plugins/commit/de7f6a3dc0e4f883006fa4f84126194b35da3b85))
+
 ### [1.2.1](https://github.com/envyafish/mr_plugins/compare/v1.2.0...v1.2.1) (2023-03-07)
 
 
