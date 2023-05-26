@@ -42,3 +42,12 @@ def copy(src, dst):
 
 def move(src, dst):
     shutil.move(src, dst)
+
+# 通过文件路径找到对应的硬链接文件，返回文件路径
+def find_hard_link_file(file_path):
+    if not os.path.exists(file_path):
+        return None
+    if os.path.islink(file_path):
+        return os.path.realpath(file_path)
+    return file_path
+
