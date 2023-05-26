@@ -219,6 +219,7 @@ def add_teacher():
     return Result.success(None)
 
 
+
 @bp.route('/rank/list', methods=["GET"])
 @login_required()
 def list_rank():
