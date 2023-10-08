@@ -109,3 +109,21 @@ def download_thread(course):
                     Logger.error(f"下载课程:添加番号{course.code}下载失败")
     else:
         Logger.error(f"下载课程:番号{course.code}不存在数据库")
+
+
+def sub_top20():
+    library, bus = get_crawler()
+    top20_codes = library.crawling_top20(1)
+    for code in top20_codes:
+        course = course_db.get_course_by_code(code)
+        if course:
+            if course.status == 0:
+                course.status = 1
+                course.sub_type = 3
+                course_db.update_course(course)
+        else:
+            course = bus.search_code(code)
+            if course:
+                course.status = 1
+                course.sub_type = 3
+                course_db.add_course(course)

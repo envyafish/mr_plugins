@@ -40,6 +40,18 @@ def sync(videos):
         filename = os.path.basename(video)
         code = filename.split('.')[-2]
         code = code.replace('-C', '')
+        code = code.replace('-cd1','')
+        code = code.replace('-cd2','')
+        code = code.replace('-cd3','')
+        code = code.replace('-cd4','')
+        code = code.replace('-cd5','')
+        code = code.replace('-cd6','')
+        code = code.replace('-cd7','')
+        code = code.replace('-cd8','')
+        code = code.replace('-cd9','')
+        code = code.replace('-无码流出','')
+        code = code.replace('726ANKK','ANKK')
+        code = code.replace('420POW','POW')
         Logger.info(f"开始处理番号{code}")
         row = course_db.get_course_by_code(code)
         if row:
