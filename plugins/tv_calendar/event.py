@@ -169,14 +169,7 @@ def on_subscribe_new_media(ctx: PluginContext, event_type: str, data: Dict):
 @plugin.task('tv_calendar_save_json', '剧集更新', cron_expression='10 0 * * *')
 def task():
     # 怕并发太高，衣总服务器撑不住
-    time.sleep(random.randint(1, 3600))
-    save_json()
-
-
-@plugin.task('tv_calendar_save_json', '剧集更新', cron_expression='10 0 * * *')
-def task():
-    # 怕并发太高，衣总服务器撑不住
-    time.sleep(random.randint(1, 3600))
+    time.sleep(random.randint(1, 7200))
     save_json()
 
 
@@ -260,8 +253,13 @@ def get_date_timestamp(air_date):
 
 
 def get_tmdb_info(tv_id, season_number):
-    return server.tmdb.request_api(api_url % {'tv_id': tv_id, 'season_number': season_number}, param)
-
+    for i in range(5):
+        try:
+            return server.tmdb.request_api(api_url % {'tv_id': tv_id, 'season_number': season_number}, param)
+        except:
+            time.sleep(5)
+            continue
+    return None;
 
 def get_after_day(day, n):
     offset = datetime.timedelta(days=n)
@@ -270,7 +268,13 @@ def get_after_day(day, n):
 
 
 def get_tv_info(tv_id):
-    return server.tmdb.request_api(tv_api_url % {'tv_id': tv_id}, param)
+    for i in range(5):
+        try:
+            return server.tmdb.request_api(tv_api_url % {'tv_id': tv_id}, param)
+        except:
+            time.sleep(5)
+            continue
+    return None;
 
 
 def find_season_poster(seasons, season_number):
@@ -438,7 +442,7 @@ def grab_ssd_banner(cookies, ua):
 
 
 def save_web_img(url, path, ua):
-    headers = {'Referer': "https://springsunday.net"}
+    headers = {}
     if ua:
         headers['User-Agent'] = ua
     res = requests.get(url, headers=headers)

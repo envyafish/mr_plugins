@@ -2,7 +2,9 @@ from mbot.core.plugins import plugin, PluginCommandContext, PluginCommandRespons
 from mbot.openapi import mbot_api
 import logging
 
-from plugins.tv_calendar.event import save_json, change_banner
+from .event import save_json
+from .event import push_message
+from .event import change_banner
 
 server = mbot_api
 _LOGGER = logging.getLogger(__name__)
