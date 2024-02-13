@@ -9,29 +9,37 @@ from plugins.xx.utils import *
 from plugins.xx.models import Base, Course, Teacher, Config
 
 lock = threading.Lock()
+
+
 class DB:
     engine: None
 
     def __init__(self):
         # self.engine = create_engine('sqlite:///xx.db')
-        self.engine = create_engine('sqlite:////data/db/xx.db', connect_args={'check_same_thread': False, 'isolation_level': None})
+        self.engine = create_engine('sqlite:////data/db/xx.db',
+                                    connect_args={'check_same_thread': False, 'isolation_level': None})
         Base.metadata.create_all(self.engine, checkfirst=True)
 
     def get_session(self):
         return sessionmaker(bind=self.engine)()
 
     def sync_database(self):
-        Logger.info("开始同步数据库表")
-        sql = 'pragma table_info(course)'
+        self.check_and_create_column('config', 'auto_sub', 'int default 0')
+
+    def check_and_create_column(self, table_name, column_name, column_definition):
+        # 连接到 SQLite 数据库
         session = self.get_session()
-        res = session.execute(text(sql)).fetchall()
-        columns = [item[1] for item in res]
-        if 'still_photo' not in columns:
-            Logger.info("course表缺少字段<still_photo>,开始修改表结构")
-            new_column_still_photo_sql = 'alter table course add still_photo text'
-            session.execute(text(new_column_still_photo_sql))
-            session.commit()
-            session.flush()
+
+        sql = "PRAGMA table_info({})".format(table_name)
+        # 查询表的 schema
+        columns = session.execute(text(sql)).fetchall()
+
+        # 检查列是否存在
+        column_exists = any(column[1] == column_name for column in columns)
+        if not column_exists:
+            session.execute(text("ALTER TABLE {} ADD COLUMN {} {}".format(table_name, column_name, column_definition)))
+        session.commit()
+        session.flush()
 
 
 class CourseDB:

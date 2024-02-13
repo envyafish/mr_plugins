@@ -93,7 +93,9 @@ def sync_new_course_task():
 
 @plugin.task('sub_top20_task', '自动订阅榜单', cron_expression='0 21 * * *')
 def sub_top20_task():
-    sub_top20()
+    config = config_db.get_config()
+    if config.auto_sub:
+        sub_top20()
 
 
 @plugin.task('download_un_download', '下载未下载', cron_expression='0 22 * * *')
