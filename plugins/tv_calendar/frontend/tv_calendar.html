@@ -8,6 +8,7 @@
           integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover"/>
+    <meta name="referrer" content="never">
     <style>
         [v-cloak] {
             display: none;
@@ -63,7 +64,8 @@
             /*height: 180px;*/
             padding: 7px 7px 0px 7px;
         }
-        .background{
+
+        .background {
             background: url('/static/bg.png') center;
             width: 100%;
             height: 100%;
@@ -73,25 +75,31 @@
             border-radius: 30px;
             background-size: cover;
         }
+
         .row_overflow {
-            margin:0px;
+            margin: 0px;
             flex-wrap: nowrap;
             overflow-x: auto;
         }
-        .banner-radius{
+
+        .banner-radius {
             border-radius: 12px;
         }
-        @media (min-width: 425px){
+
+        @media (min-width: 425px) {
             .row_overflow {
                 flex-wrap: wrap;
             }
+
             .expand {
                 display: none;
             }
-            .banner-radius{
+
+            .banner-radius {
                 border-radius: 30px;
             }
         }
+
         .row_overflow::-webkit-scrollbar {
             display: none;
         }
@@ -107,6 +115,40 @@
             <img :src="'/static/bg.jpg?'+new Date().getTime()" style="width: 100%;" class="banner-radius">
         </div>
         <div v-if="status">
+            <div style="display: flex;position: relative;align-items: center">
+                <div class="date">
+                    <span style="opacity: 0.8;">{{dateFormat(stream_date)}} 流媒体上新</span><span style="font-size: 14px;opacity: 0.8;">   from：随心影视控</span>
+                </div>
+                <a class='expand' style="position: absolute;right: 5px;color: rgb(64, 122, 214);" :id="'a-1'"
+                   @click="expand(-1)">展开</a>
+            </div>
+            <div class="divider"
+                 style="height: 1px; opacity: 0.12; margin: 0px 7px 12px 7px;background: black;"></div>
+            <div class="row justify-content-left row_overflow" :id="'row-1'">
+                <div class="col col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1"
+                     v-for="(stream_media,key,j) in stream_media_list" :key="j"
+                     style="text-align: center;padding-bottom: 5px">
+                    <img style="border-radius: 10px;overflow: hidden;width:100%;aspect-ratio: 2/3;"
+                         :src="stream_media.img"
+                    />
+                     <div class="text-ellipsis--1"
+                         style="font-weight: bold; font-size: 15px; opacity: 0.8;margin-top: 7px;">
+                        {{stream_media.title}}
+                    </div>
+                    <div class="text-ellipsis--1"
+                         style="font-weight: normal;opacity:0.6;margin-bottom: 0px;" v-if="stream_media.genre">
+                        {{stream_media.genre}}
+                    </div>
+                     <div class="text-ellipsis--1"
+                         style="font-weight: normal;opacity:0.6;margin-bottom: 0px;" v-if="stream_media.platform">
+                        平台：{{stream_media.platform}}
+                    </div>
+                    <div class="text-ellipsis--1"
+                         style="font-weight: normal;opacity:0.6;margin-bottom: 0px;" v-if="stream_media.rate">
+                        评分：{{stream_media.rate}}
+                    </div>
+                </div>
+            </div>
             <template v-for="(val,key,i) in date_dict" :key="i">
                 <div style="display: flex;position: relative;align-items: center">
                     <div class="date">
@@ -114,10 +156,13 @@
                         <span style="opacity: 0.8; padding-left: 10px">{{getWeek(key)}}</span>
                         <span v-if="key == formatDate(new Date())" style="opacity: 0.8; padding-left: 3px">·</span>
                         <span v-if="key == formatDate(new Date())" style="opacity: 0.8; padding-left: 3px">今天</span>
-                        <span v-if="key == formatDate(new Date(new Date().setDate(new Date().getDate()-1)))" style="opacity: 0.8; padding-left: 3px">·</span>
-                        <span v-if="key == formatDate(new Date(new Date().setDate(new Date().getDate()-1)))" style="opacity: 0.8; padding-left: 3px">昨天</span>
+                        <span v-if="key == formatDate(new Date(new Date().setDate(new Date().getDate()-1)))"
+                              style="opacity: 0.8; padding-left: 3px">·</span>
+                        <span v-if="key == formatDate(new Date(new Date().setDate(new Date().getDate()-1)))"
+                              style="opacity: 0.8; padding-left: 3px">昨天</span>
                     </div>
-                    <a class='expand' style="position: absolute;right: 5px;color: rgb(64, 122, 214);" :id="'a'+i" @click="expand(i)">展开</a>
+                    <a class='expand' style="position: absolute;right: 5px;color: rgb(64, 122, 214);" :id="'a'+i"
+                       @click="expand(i)">展开</a>
                 </div>
                 <div class="divider"
                      style="height: 1px; opacity: 0.12; margin: 0px 7px 12px 7px;background: black;"></div>
@@ -148,7 +193,8 @@
         </div>
         <div v-else>
             <div class="d-flex align-items-center">
-                <div class="spinner-border ml-auto text-warning" role="status" aria-hidden="true" style="width: 3rem; height: 3rem;"></div>
+                <div class="spinner-border ml-auto text-warning" role="status" aria-hidden="true"
+                     style="width: 3rem; height: 3rem;"></div>
             </div>
         </div>
     </div>
@@ -161,6 +207,8 @@
         data() {
             return {
                 date_dict: [],
+                stream_media_list: [],
+                stream_date: '',
                 imageBaseUrl: 'https://image.tmdb.org/t/p/w500',
                 offset: 6,
                 status: false,
@@ -182,14 +230,14 @@
                     })
                 })
             },
-            expand(i){
-                text = document.getElementById('a'+i).innerText
+            expand(i) {
+                text = document.getElementById('a' + i).innerText
                 if (text == '展开') {
-                    document.getElementById('a'+i).innerText = '收拢'
-                    document.getElementById('row'+i).style.flexWrap = 'wrap'
-                }else {
-                    document.getElementById('a'+i).innerText = '展开'
-                    document.getElementById('row'+i).style.flexWrap = 'nowrap'
+                    document.getElementById('a' + i).innerText = '收拢'
+                    document.getElementById('row' + i).style.flexWrap = 'wrap'
+                } else {
+                    document.getElementById('a' + i).innerText = '展开'
+                    document.getElementById('row' + i).style.flexWrap = 'nowrap'
                 }
             },
             getDate(strDate) {
@@ -239,6 +287,11 @@
                 }
                 return y + "-" + m + "-" + d;
             },
+            async getStreamMedia() {
+                let res = await this.get(this.host + '/api/plugins/tv_calendar/everyday_stream_media')
+                this.stream_media_list = res.data.data
+                this.stream_date = res.data.date
+            },
             async getEpisodes() {
                 let res = await this.get(this.host + '/api/plugins/tv_calendar/list')
                 let episodes = res.data
@@ -275,7 +328,6 @@
             },
             getAccessToken() {
                 return localStorage.getItem("accessToken")
-
             },
             async getChoose() {
                 let res = await this.get(this.host + '/api/plugins/tv_calendar/choose')
@@ -305,6 +357,7 @@
             console.log('mounted')
             await this.getChoose()
             await this.getEpisodes()
+            await this.getStreamMedia()
             this.setTheme()
 
             // 添加事件监听

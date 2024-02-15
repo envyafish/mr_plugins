@@ -4,7 +4,6 @@ import shutil
 import typing
 import random
 import time
-from typing import Dict, Any
 
 from moviebotapi.common import MenuItem
 from moviebotapi.core.models import MediaType
@@ -19,6 +18,7 @@ from flask import Blueprint, request
 from mbot.common.flaskutils import api_result
 from mbot.core.plugins import plugin
 from mbot.register.controller_register import login_required
+from plugins.tv_calendar.stream_media import get_stream_media
 import requests
 import bs4
 
@@ -100,6 +100,7 @@ def after_setup(plugin_meta: PluginMeta, config: Dict[str, Any]):
     server.auth.add_permission([1, 2], '/api/plugins/tv_calendar/list')
     server.auth.add_permission([1, 2], '/api/plugins/tv_calendar/one')
     server.auth.add_permission([1, 2], '/api/plugins/tv_calendar/choose')
+    server.auth.add_permission([1, 2], '/api/plugins/tv_calendar/everyday_stream_media')
     # 获取菜单，把追剧日历添加到"我的"菜单分组
     menus = server.common.list_menus()
     for item in menus:
@@ -111,10 +112,10 @@ def after_setup(plugin_meta: PluginMeta, config: Dict[str, Any]):
             item.pages.append(test)
             break
     server.common.save_menus(menus)
-    episode_arr = get_calendar_cache()
+    episode_arr = get_local_json('calendar.json')
     if not episode_arr:
         episode_arr = []
-        save_calendar_cache(episode_arr)
+        save_local_json('calendar.json',episode_arr)
 
 
 @plugin.config_changed
@@ -145,7 +146,7 @@ def on_subscribe_new_media(ctx: PluginContext, event_type: str, data: Dict):
             tv = get_tv_info(tmdb_id)
             season = get_tmdb_info(tmdb_id, season_index)
             if tv and season:
-                episode_arr = get_calendar_cache()
+                episode_arr = get_local_json('calendar.json')
                 tv_poster = tv['poster_path']
                 seasons = tv['seasons']
                 tv_name = tv['name']
@@ -160,7 +161,7 @@ def on_subscribe_new_media(ctx: PluginContext, event_type: str, data: Dict):
                     episode['season_poster'] = season_poster
                     episode['backdrop_path'] = backdrop_path
                     episode_arr.append(episode)
-                save_calendar_cache(episode_arr)
+                save_local_json('calendar.json',episode_arr)
             else:
                 _LOGGER.info('没有查询到tmdb数据')
         _LOGGER.info('更新日历数据完成')
@@ -182,7 +183,7 @@ def change_banner_task():
 @bp.route('/list', methods=["GET"])
 @login_required()
 def get_subscribe_tv_list():
-    json_list = get_calendar_cache()
+    json_list = get_local_json('calendar.json')
     index_date = get_after_day(datetime.date.today(), -1)
     end_date = get_after_day(index_date, offset - 1)
     index_date_timestamp = int(index_date.strftime('%Y%m%d'))
@@ -222,7 +223,7 @@ def get_tv_air_date():
     data = request.args
     tmdb_id = data.get('tmdb_id')
     season_number = data.get('season_number')
-    json_list = get_calendar_cache()
+    json_list = get_local_json('calendar.json')
     filter_list = list(
         filter(lambda x: x['show_id'] == int(tmdb_id) and x['season_number'] == int(season_number), json_list))
     if media_server_enable:
@@ -246,6 +247,23 @@ def get_media_server_enable():
     return api_result(code=0, message='ok', data=choose)
 
 
+@bp.route('/everyday_stream_media', methods=["GET"])
+@login_required()
+def get_everyday_stream_media():
+    json_o = get_local_json('stream_media.json')
+    if json_o and json_o['date'] == datetime.date.today().strftime('%Y-%m-%d'):
+        return api_result(code=0, message='ok', data=json_o)
+    else:
+        data = get_stream_media()
+        if data:
+            json_o = {
+                'date': datetime.date.today().strftime('%Y-%m-%d'),
+                'data': data
+            }
+            save_local_json('stream_media.json', json_o)
+        return api_result(code=0, message='ok', data=json_o)
+
+
 def get_date_timestamp(air_date):
     if air_date == '' or air_date is None:
         return 0
@@ -260,6 +278,7 @@ def get_tmdb_info(tv_id, season_number):
             time.sleep(5)
             continue
     return None;
+
 
 def get_after_day(day, n):
     offset = datetime.timedelta(days=n)
@@ -320,13 +339,32 @@ def save_json_no_push():
             episode['backdrop_path'] = backdrop_path
             episode_arr.append(episode)
 
-    save_calendar_cache(episode_arr)
+    save_local_json('calendar.json',episode_arr)
     _LOGGER.info('剧集数据更新结束')
 
 
 def save_json():
     save_json_no_push()
     push_message()
+
+
+def save_local_json(file_path, json_data):
+    # 将数据写入 JSON 文件
+    with open(file_path, "w") as json_file:
+        json.dump(json_data, json_file)
+
+
+def get_local_json(file_path):
+    try:
+        # 从 JSON 文件中加载数据
+        with open(file_path, "r") as json_file:
+            data = json.load(json_file)
+            print("从文件中读取的 JSON 数据:", data)
+    except FileNotFoundError:
+        return None
+    except json.JSONDecodeError as e:
+        print("JSON 解码错误:", e)
+    return data
 
 
 def save_calendar_cache(json_data):
@@ -340,7 +378,7 @@ def get_calendar_cache():
 
 def push_message():
     _LOGGER.info('推送今日更新')
-    episode_arr = get_calendar_cache()
+    episode_arr = get_local_json('calendar.json')
     episode_filter = list(
         filter(lambda x: x['air_date'] == datetime.date.today().strftime('%Y-%m-%d'), episode_arr))
     name_dict = {}
