@@ -254,10 +254,10 @@ def get_everyday_stream_media():
     if json_o and json_o['date'] == datetime.date.today().strftime('%Y-%m-%d'):
         return api_result(code=0, message='ok', data=json_o)
     else:
-        data = get_stream_media()
-        if data:
+        data, date = get_stream_media()
+        if data and date == datetime.date.today().strftime('%Y-%m-%d'):
             json_o = {
-                'date': datetime.date.today().strftime('%Y-%m-%d'),
+                'date': date,
                 'data': data
             }
             save_local_json('stream_media.json', json_o)

@@ -4,6 +4,7 @@ from mbot.core.plugins import plugin
 from plugins.xx.base_config import ConfigType, get_base_config
 from plugins.xx.db import get_course_db, get_teacher_db, get_config_db
 from plugins.xx.exceptions import CloudFlareError
+from plugins.xx.media_server import MediaServer
 from plugins.xx.notify import Notify
 from plugins.xx.utils import *
 from plugins.xx.models import Result, Course, Teacher, Config
@@ -166,8 +167,19 @@ def add_course():
     course = Course(data)
     config = config_db.get_config()
     notify = Notify(config)
-
+    media_server = MediaServer()
+    codes = media_server.get_codes()
     row = course_db.get_course_by_code(course.code)
+    if course.code in codes:
+        if row:
+            row.status = 2
+            row.sub_type = 1
+            course_db.update_course(row)
+        else:
+            course.status = 2
+            course.sub_type = 1
+            course_db.add_course(course)
+        return Result.fail("已存在媒体库的番号")
     if row:
         if row.status <= 0:
             row.status = 1

@@ -101,6 +101,8 @@ class Config(Base):
     msg_channel: str = Column(String(255))
     msg_img: str = Column(String(255))
     auto_sub: int = Column(Integer)
+    emby_folders: str = Column(Text)
+    plex_titles: str = Column(Text)
 
     def __init__(self, data: Dict):
         dict_trans_obj(data, self)

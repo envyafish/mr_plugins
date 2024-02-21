@@ -15,7 +15,6 @@ class DB:
     engine: None
 
     def __init__(self):
-        # self.engine = create_engine('sqlite:///xx.db')
         self.engine = create_engine('sqlite:////data/db/xx.db',
                                     connect_args={'check_same_thread': False, 'isolation_level': None})
         Base.metadata.create_all(self.engine, checkfirst=True)
@@ -25,6 +24,8 @@ class DB:
 
     def sync_database(self):
         self.check_and_create_column('config', 'auto_sub', 'int default 0')
+        self.check_and_create_column('config', 'emby_folders', 'text')
+        self.check_and_create_column('config', 'plex_titles', 'text')
 
     def check_and_create_column(self, table_name, column_name, column_definition):
         # 连接到 SQLite 数据库

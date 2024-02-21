@@ -3,13 +3,13 @@ from enum import Enum
 import yaml
 
 yml_path: str = '/data/conf/base_config.yml'
-# yml_path: str = 'base_config.yml'
 
 
 class ConfigType(str, Enum):
     Download_Client = 'download_client'
     Notify_Channel = 'notify_channel'
     Media_Path = 'media_path'
+    Media_Server = 'media_server'
 
 
 def get_base_config(config_type: ConfigType):

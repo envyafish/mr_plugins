@@ -1,57 +1,27 @@
 import os
+import re
 
 from plugins.xx.common import get_crawler
 from plugins.xx.logger import Logger
 from plugins.xx.db import get_course_db
+from plugins.xx.media_server import MediaServer
 
 
-def command(path):
-    videos = collect_videos(path)
+def command():
+    videos = collect_videos()
     sync(videos)
 
 
-def collect_videos(path):
-    videos = []
-    if os.path.isdir(path):
-        for file in os.listdir(path):
-            videos.extend(collect_videos(os.path.join(path, file)))
-        return videos
-    elif os.path.splitext(path)[1].lower() in [
-        ".mp4",
-        ".avi",
-        ".rmvb",
-        ".wmv",
-        ".mov",
-        ".mkv",
-        ".webm",
-        ".iso",
-        ".mpg",
-        ".m4v",
-    ]:
-        return [path]
-    else:
-        return []
+def collect_videos():
+    media_server = MediaServer()
+    codes = media_server.get_codes()
+    return codes
 
 
-def sync(videos):
+def sync(codes):
     course_db = get_course_db()
     library, bus = get_crawler()
-    for video in videos:
-        filename = os.path.basename(video)
-        code = filename.split('.')[-2]
-        code = code.replace('-C', '')
-        code = code.replace('-cd1','')
-        code = code.replace('-cd2','')
-        code = code.replace('-cd3','')
-        code = code.replace('-cd4','')
-        code = code.replace('-cd5','')
-        code = code.replace('-cd6','')
-        code = code.replace('-cd7','')
-        code = code.replace('-cd8','')
-        code = code.replace('-cd9','')
-        code = code.replace('-无码流出','')
-        code = code.replace('726ANKK','ANKK')
-        code = code.replace('420POW','POW')
+    for code in codes:
         Logger.info(f"开始处理番号{code}")
         row = course_db.get_course_by_code(code)
         if row:

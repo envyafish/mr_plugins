@@ -1,8 +1,9 @@
+import datetime
+import json
 import re
 
 import requests
 from pyquery import PyQuery as pq
-
 
 
 # 获取文章列表
@@ -31,15 +32,44 @@ def get_stream_media_list(url: str):
     response = requests.get(url, headers=headers)
 
     doc = pq(response.text)
-    p_list = doc('#js_content p:not([style*="outline: 0px"]):not([style*="display: none"])')
-    p_list = p_list.items()
-    p_list = list(p_list);
+    content = doc('#js_content')
+    p_list = content.children()
+    p_list = list(p_list.items())
+    sub_head(p_list)
+    p_list = sub_foot(p_list)
     stream_media_list = []
     # 将文章内容进行分组
     while p_list:
         article = get_article_content(p_list)
-        stream_media_list.append(article)
+        if article:
+            stream_media_list.append(article)
     return stream_media_list
+
+
+def sub_head(p_list: list):
+    while p_list:
+        p = p_list[0]
+        if p.text() and p.text()[0].isdigit():
+            break
+        if p.text():
+            if not p.text()[0].isdigit():
+                p_list.remove(p)
+                continue
+        else:
+            p_list.remove(p)
+            continue
+
+
+def sub_foot(p_list: list):
+    index = 0
+    for p in p_list:
+        #         判断p的子元素为section,返回index
+        if p.text() and p.text()=='END':
+            break
+        index = index + 1
+    #     删除p_list中index之后的元素
+    p_list = p_list[:index]
+    return p_list
 
 
 def get_article_content(p_list: list):
@@ -58,12 +88,13 @@ def get_article_content(p_list: list):
             if p('img'):
                 article['img'] = p('img').attr('data-src')
             else:
-                if p.text()[0].isdigit():
+                if p.text() and p.text()[0].isdigit():
                     break
-                # article['content'] = p.text()
+                article['content'] = p.text()
         p_list.remove(p)
         index = index + 1
     return article
+
 
 def extract_info(text):
     # 定义正则表达式模式
@@ -89,10 +120,20 @@ def extract_info(text):
 
     return title, platform, imdb_rating, genre
 
+
 def get_stream_media():
     article_list = get_article_list()
     latest_article = get_latest_article(article_list)
     url = latest_article['url']
+    # 时间戳转日期
+    date_time = datetime.datetime.fromtimestamp(int(latest_article['create_time']))
+    # 使用 strftime() 格式化日期
+    date = date_time.strftime('%Y-%m-%d')
     stream_media_list = get_stream_media_list(url)
-    return stream_media_list
+    return stream_media_list, date
 
+
+# if __name__ == '__main__':
+#     stream_media_list, date = get_stream_media()
+#     for stream_media in stream_media_list:
+#         print(stream_media)
