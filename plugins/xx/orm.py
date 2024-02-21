@@ -8,8 +8,6 @@ from plugins.xx.logger import Logger
 from plugins.xx.utils import *
 from plugins.xx.models import Base, Course, Teacher, Config
 
-lock = threading.Lock()
-
 
 class DB:
     engine: None
@@ -51,88 +49,80 @@ class CourseDB:
         self.session = session
 
     def get_course_by_primary(self, primary: int):
-        with lock:
-            return self.session.query(Course).filter_by(id=primary).first()
+        return self.session.query(Course).filter_by(id=primary).first()
 
     def get_course_by_code(self, code: str):
-        with lock:
-            return self.session.query(Course).filter_by(code=code).first()
+        return self.session.query(Course).filter_by(code=code).first()
 
     def filter_course(self, page, keyword, status):
-        with lock:
-            offset = (page - 1) * self.limit
-            query = self.session.query(Course)
-            if keyword:
-                keyword = keyword.upper()
-                rule = or_(Course.code.like(f"%{keyword}%"), Course.casts.like(f"%{keyword}%"))
-                query = query.filter(rule)
-            if status:
-                query = query.filter(Course.status == status)
-            query = query.filter(Course.status > 0)
-            return query.order_by(Course.create_time.desc()).offset(offset).limit(self.limit).all()
+        offset = (page - 1) * self.limit
+        query = self.session.query(Course)
+        if keyword:
+            keyword = keyword.upper()
+            rule = or_(Course.code.like(f"%{keyword}%"), Course.casts.like(f"%{keyword}%"))
+            query = query.filter(rule)
+        if status:
+            query = query.filter(Course.status == status)
+        query = query.filter(Course.status > 0)
+        return query.order_by(Course.create_time.desc()).offset(offset).limit(self.limit).all()
 
     def count_total(self, keyword, status):
-        with lock:
-            query = self.session.query(func.count(Course.id))
-            if keyword:
-                rule = or_(Course.code.like(f"%{keyword}%"), Course.casts.like(f"%{keyword}%"))
-                query = query.filter(rule)
-            if status:
-                query = query.filter(Course.status == status)
-            query = query.filter(Course.status > 0)
-            return query.scalar()
+        query = self.session.query(func.count(Course.id))
+        if keyword:
+            rule = or_(Course.code.like(f"%{keyword}%"), Course.casts.like(f"%{keyword}%"))
+            query = query.filter(rule)
+        if status:
+            query = query.filter(Course.status == status)
+        query = query.filter(Course.status > 0)
+        return query.scalar()
 
     def list_course(self, **qry):
-        with lock:
-            return self.session.query(Course).filter_by(**qry).all()
+        return self.session.query(Course).filter_by(**qry).all()
 
     def add_course(self, data: Course):
-        with lock:
-            course = self.session.query(Course).filter_by(code=data.code).first()
-            if course:
-                return course
-            try:
-                data.create_time = get_current_datetime_str()
-                self.session.add(data)
-                self.session.commit()
-                return data
-            except Exception as e:
-                Logger.error(repr(e))
-                self.session.rollback()
-                raise SqlError
-            finally:
-                self.session.flush()
+        course = self.session.query(Course).filter_by(code=data.code).first()
+        if course:
+            return course
+        try:
+            data.create_time = get_current_datetime_str()
+            self.session.add(data)
+            self.session.commit()
+            return data
+        except Exception as e:
+            Logger.error(repr(e))
+            self.session.rollback()
+            raise SqlError
+        finally:
+            self.session.flush()
 
     def update_course(self, data: Course):
-        with lock:
-            course = self.session.query(Course).filter_by(id=data.id).first()
-            if not course:
-                return None
+        course = self.session.query(Course).filter_by(id=data.id).first()
+        if not course:
+            return None
+        try:
+            data.update_time = get_current_datetime_str()
+            copy_properties(data, course)
+            self.session.commit()
+            return course
+        except Exception as e:
+            Logger.error(repr(e))
+            self.session.rollback()
+            raise SqlError
+        finally:
+            self.session.flush()
+
+    def delete_course(self, primary: int):
+        course = self.get_course_by_primary(primary)
+        if course:
             try:
-                data.update_time = get_current_datetime_str()
-                copy_properties(data, course)
+                self.session.delete(course)
                 self.session.commit()
-                return course
             except Exception as e:
                 Logger.error(repr(e))
                 self.session.rollback()
                 raise SqlError
             finally:
                 self.session.flush()
-
-    def delete_course(self, primary: int):
-        with lock:
-            course = self.get_course_by_primary(primary)
-            if course:
-                try:
-                    self.session.delete(course)
-                    self.session.commit()
-                except Exception as e:
-                    Logger.error(repr(e))
-                    self.session.rollback()
-                    raise SqlError
-                finally:
-                    self.session.flush()
 
 
 class TeacherDB:
@@ -142,71 +132,64 @@ class TeacherDB:
         self.session = session
 
     def get_teacher_by_primary(self, primary: int):
-        with lock:
-            return self.session.query(Teacher).filter_by(id=primary).first()
+        return self.session.query(Teacher).filter_by(id=primary).first()
 
     def get_teacher_by_code(self, code: str):
-        with lock:
-            return self.session.query(Teacher).filter_by(code=code).first()
+        return self.session.query(Teacher).filter_by(code=code).first()
 
     def filter_teacher(self, keyword):
-        with lock:
-            query = self.session.query(Teacher)
-            if keyword:
-                query = query.filter(Teacher.name.like(f"%{keyword}%"))
-            return query.order_by(Teacher.create_time.desc()).all()
+        query = self.session.query(Teacher)
+        if keyword:
+            query = query.filter(Teacher.name.like(f"%{keyword}%"))
+        return query.order_by(Teacher.create_time.desc()).all()
 
     def list_teacher(self, **qry):
-        with lock:
-            return self.session.query(Teacher).filter_by(**qry).all()
+        return self.session.query(Teacher).filter_by(**qry).all()
 
     def add_teacher(self, data: Teacher):
-        with lock:
-            teacher = self.session.query(Teacher).filter_by(code=data.code).first()
-            if teacher:
-                return teacher
-            try:
-                data.create_time = get_current_datetime_str()
-                self.session.add(data)
-                self.session.commit()
-                return data
-            except Exception as e:
-                Logger.error(repr(e))
-                self.session.rollback()
-                raise SqlError
-            finally:
-                self.session.flush()
+        teacher = self.session.query(Teacher).filter_by(code=data.code).first()
+        if teacher:
+            return teacher
+        try:
+            data.create_time = get_current_datetime_str()
+            self.session.add(data)
+            self.session.commit()
+            return data
+        except Exception as e:
+            Logger.error(repr(e))
+            self.session.rollback()
+            raise SqlError
+        finally:
+            self.session.flush()
 
     def update_teacher(self, data: Teacher):
-        with lock:
-            teacher = self.session.query(Teacher).filter_by(id=data.id).first()
-            if not teacher:
-                return None
+        teacher = self.session.query(Teacher).filter_by(id=data.id).first()
+        if not teacher:
+            return None
+        try:
+            data.update_time = get_current_datetime_str()
+            copy_properties(data, teacher)
+            self.session.commit()
+            return teacher
+        except Exception as e:
+            Logger.error(repr(e))
+            self.session.rollback()
+            raise SqlError
+        finally:
+            self.session.flush()
+
+    def delete_teacher(self, primary: int):
+        teacher = self.get_teacher_by_primary(primary)
+        if teacher:
             try:
-                data.update_time = get_current_datetime_str()
-                copy_properties(data, teacher)
+                self.session.delete(teacher)
                 self.session.commit()
-                return teacher
             except Exception as e:
                 Logger.error(repr(e))
                 self.session.rollback()
                 raise SqlError
             finally:
                 self.session.flush()
-
-    def delete_teacher(self, primary: int):
-        with lock:
-            teacher = self.get_teacher_by_primary(primary)
-            if teacher:
-                try:
-                    self.session.delete(teacher)
-                    self.session.commit()
-                except Exception as e:
-                    Logger.error(repr(e))
-                    self.session.rollback()
-                    raise SqlError
-                finally:
-                    self.session.flush()
 
 
 class ConfigDB:
@@ -216,23 +199,21 @@ class ConfigDB:
         self.session = session
 
     def get_config(self):
-        with lock:
-            return self.session.query(Config).first()
+        return self.session.query(Config).first()
 
     def update_config(self, data):
-        with lock:
-            config = self.session.query(Config).first()
-            try:
-                if config:
-                    copy_properties(data, config)
-                    self.session.commit()
-                    return config
-                else:
-                    self.session.add(data)
-                    self.session.commit()
-            except Exception as e:
-                Logger.error(repr(e))
-                self.session.rollback()
-                raise SqlError
-            finally:
-                self.session.flush()
+        config = self.session.query(Config).first()
+        try:
+            if config:
+                copy_properties(data, config)
+                self.session.commit()
+                return config
+            else:
+                self.session.add(data)
+                self.session.commit()
+        except Exception as e:
+            Logger.error(repr(e))
+            self.session.rollback()
+            raise SqlError
+        finally:
+            self.session.flush()
