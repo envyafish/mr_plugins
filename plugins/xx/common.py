@@ -1,5 +1,7 @@
 import threading
 
+from moviebotapi.site import Torrent
+
 from plugins.xx.db import get_course_db, get_teacher_db, get_config_db
 from plugins.xx.crawler import JavLibrary, JavBus
 from plugins.xx.download_client import DownloadClient
@@ -114,9 +116,15 @@ def download_thread(course):
                 fsm = FSM(config.fsm_token, config.fsm_passkey, config.fsm_salt)
                 data = fsm.search(type=MediaType.AV, keyword=course.code, page=1)
                 list = data['data']['list']
+                Logger.error(list)
                 if list:
-                    tid = list[0]['tid']
                     Logger.error(f"飞天拉面神教搜索到番号{course.code}的课程,开始下载")
+                    tid = list[0]['tid']
+                    torrent = Torrent({})
+                    torrent.size_mb = float(round(list[0]['fileRawSize'] / 1024 / 1024, 2))
+                    torrent.upload_count = list[0]['peers']['upload']
+                    torrent.download_count = list[0]['peers']['download']
+                    setattr(torrent, 'chinese', False)
                     torrent_path = fsm.download_torrent(tid, course.code)
                     if torrent_path:
                         download_status = client.download_from_file(torrent_path, config.download_path, config.category)
