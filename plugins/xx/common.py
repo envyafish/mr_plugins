@@ -3,6 +3,7 @@ import threading
 from plugins.xx.db import get_course_db, get_teacher_db, get_config_db
 from plugins.xx.crawler import JavLibrary, JavBus
 from plugins.xx.download_client import DownloadClient
+from plugins.xx.fsm import FSM, MediaType
 from plugins.xx.models import Teacher, Course
 from plugins.xx.notify import Notify
 from plugins.xx.site import Site
@@ -107,6 +108,25 @@ def download_thread(course):
                     notify.push_downloading(course, torrent)
                 else:
                     Logger.error(f"下载课程:添加番号{course.code}下载失败")
+        else:
+            if config.fsm_token:
+                Logger.error("开始从飞天拉面神教搜索可下载的课程")
+                fsm = FSM(config.fsm_token, config.fsm_passkey, config.fsm_salt)
+                data = fsm.search(type=MediaType.AV, keyword=course.code, page=1)
+                list = data['data']['list']
+                if list:
+                    tid = list[0]['tid']
+                    Logger.error(f"飞天拉面神教搜索到番号{course.code}的课程,开始下载")
+                    torrent_path = fsm.download_torrent(tid, course.code)
+                    if torrent_path:
+                        download_status = client.download_from_file(torrent_path, config.download_path, config.category)
+                        if download_status:
+                            course.status = 2
+                            course_db.update_course(course)
+                            notify.push_downloading(course, torrent)
+                        else:
+                            Logger.error(f"下载课程:添加番号{course.code}下载失败")
+
     else:
         Logger.error(f"下载课程:番号{course.code}不存在数据库")
 

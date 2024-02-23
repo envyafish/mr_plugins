@@ -55,6 +55,7 @@ def after_setup(plugin_meta: PluginMeta, config: Dict[str, Any]):
     mbot_api.auth.add_permission([1, 2], '/api/plugins/xx/teacher/delete')
     mbot_api.auth.add_permission([1, 2], '/api/plugins/xx/rank/list')
     mbot_api.auth.add_permission([1, 2], '/api/plugins/xx/complex/search')
+    mbot_api.auth.add_permission([1, 2], '/api/plugins/xx/proxy/pic')
 
 
 @plugin.on_event(bind_event=['SiteListComplete'], order=1)

@@ -1,5 +1,7 @@
+import requests
 from moviebotapi.site import Torrent
 
+from plugins.xx import Logger
 from plugins.xx.utils import get_current_datetime_str
 from plugins.xx.base_config import get_base_config, ConfigType
 from plugins.xx.models import Config, Course, Teacher
@@ -8,6 +10,8 @@ from mbot.openapi import mbot_api
 
 class Notify:
     config: Config
+    proxy_url_tg = f"http://127.0.0.1:{mbot_api.config.web.port}/api/plugins/xx/proxy/pic"
+    proxy_url = f"{mbot_api.config.web.server_url}/api/plugins/xx/proxy/pic"
 
     def __init__(self, config: Config):
         self.config = config
@@ -18,7 +22,16 @@ class Notify:
         channel_list = list(filter(lambda x: x['name'] == channel_name, channel_configs))
         if not channel_list:
             return False
-        if channel_list[0]['type'] == 'telegram':
+        if channel_list[0]['type'] in ['telegram']:
+            return True
+
+    @staticmethod
+    def is_discord(channel_name):
+        channel_configs = get_base_config(ConfigType.Notify_Channel)
+        channel_list = list(filter(lambda x: x['name'] == channel_name, channel_configs))
+        if not channel_list:
+            return False
+        if channel_list[0]['type'] in ['discord']:
             return True
 
     def push_subscribe_course(self, course: Course):
@@ -34,13 +47,16 @@ class Notify:
             'nickname': '不愿透露名字',
             'country': ['霓虹'],
             'cn_name': course.code,
-            'pic_url': self.config.msg_img
+            'genres': course.genres.split(','),
+            'intro': course.title,
+            'pic_url': f"{self.proxy_url}?url=https://www.javbus.com{course.banner}"
         }
         for uid in uid_list:
             for channel in channel_list:
                 if self.is_telegram(channel):
-                    context['genres'] = course.genres.split(',')
-                    context['intro'] = course.title
+                    context['pic_url'] = f"{self.proxy_url_tg}?url=https://www.javbus.com{course.banner}"
+                if self.is_discord(channel):
+                    context['pic_url'] = f"https://www.javbus.com{course.banner}"
                 mbot_api.notify.send_message_by_tmpl_name('sub_movie', context=context, to_uid=int(uid),
                                                           to_channel_name=channel)
 
@@ -57,13 +73,16 @@ class Notify:
             'nickname': teacher.name,
             'country': ['霓虹'],
             'cn_name': course.code,
-            'pic_url': self.config.msg_img
+            'genres': course.genres.split(','),
+            'intro': course.title,
+            'pic_url': f"{self.proxy_url}?url=https://www.javbus.com{course.banner}"
         }
         for uid in uid_list:
             for channel in channel_list:
                 if self.is_telegram(channel):
-                    context['genres'] = course.genres.split(',')
-                    context['intro'] = course.title
+                    context['pic_url'] = f"{self.proxy_url_tg}?url=https://www.javbus.com{course.banner}"
+                if self.is_discord(channel):
+                    context['pic_url'] = f"https://www.javbus.com{course.banner}"
                 mbot_api.notify.send_message_by_tmpl_name('sub_movie', context=context, to_uid=int(uid),
                                                           to_channel_name=channel)
 
@@ -92,12 +111,16 @@ class Notify:
             'waist': teacher.waist,
             'hip': teacher.hip,
             'limit_date': teacher.limit_date,
-            'pic_url': self.config.msg_img
+            'pic_url': f"{self.proxy_url}?url=https://www.javbus.com{teacher.photo}"
         }
         for uid in uid_list:
-            mbot_api.notify.send_message_by_tmpl(title=title, body=body, context=context,
-                                                 to_uid=int(uid),
-                                                 to_channel_name=channel_list)
+            for channel in channel_list:
+                if self.is_telegram(channel):
+                    context['pic_url'] = f"{self.proxy_url_tg}?url=https://www.javbus.com{teacher.photo}"
+                if self.is_discord(channel):
+                    context['pic_url'] = f"https://www.javbus.com{teacher.photo}"
+                mbot_api.notify.send_message_by_tmpl(title=title, body=body, context=context, to_uid=int(uid),
+                                                     to_channel_name=channel)
 
     def push_downloading(self, course: Course, torrent: Torrent):
         if not self.config.msg_uid:
@@ -122,11 +145,15 @@ class Notify:
             'upload_count': torrent.upload_count,
             'download_count': torrent.download_count,
             'casts': course.casts,
-            'has_chinese': torrent.chinese
+            'has_chinese': torrent.chinese,
+            'intro': course.title,
+            'pic_url': f"{self.proxy_url}?url=https://www.javbus.com{course.banner}"
         }
         for uid in uid_list:
             for channel in channel_list:
                 if self.is_telegram(channel):
-                    context['intro'] = course.title
+                    context['pic_url'] = f"{self.proxy_url_tg}?url=https://www.javbus.com{course.banner}"
+                if self.is_discord(channel):
+                    context['pic_url'] = f"https://www.javbus.com{course.banner}"
                 mbot_api.notify.send_message_by_tmpl(title=title, body=body, context=context, to_uid=int(uid),
                                                      to_channel_name=channel)

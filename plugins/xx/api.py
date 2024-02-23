@@ -1,4 +1,8 @@
-from flask import Blueprint, request, render_template, Flask, redirect
+import threading
+from io import BytesIO
+
+import requests
+from flask import Blueprint, request, render_template, Flask, redirect, send_file
 
 from mbot.core.plugins import plugin
 from plugins.xx.base_config import ConfigType, get_base_config
@@ -42,6 +46,32 @@ def index():
 @bp.route('/<view>', methods=["GET"])
 def route_view(view):
     return render_template('xx/index.html')
+
+
+@bp.route('/proxy/pic', methods=["GET"])
+def proxy():
+    config = config_db.get_config()
+    picurl = request.args.get('url')
+    if config.proxy:
+        proxies = {
+            'https': config.proxy,
+            'http': config.proxy
+        }
+        try:
+            response = requests.get(picurl, proxies=proxies, timeout=10)
+            if response.status_code == 200:
+                image_file = BytesIO(response.content)
+                return send_file(image_file, mimetype='image/jpg')
+        except:
+            return ''
+    else:
+        try:
+            response = requests.get(picurl, timeout=10)
+            if response and response.status_code == 200:
+                image_file = BytesIO(response.content)
+                return send_file(image_file, mimetype='image/jpg')
+        except:
+            return ''
 
 
 @bp.route('/sites', methods=["GET"])
@@ -185,7 +215,8 @@ def add_course():
             row.status = 1
             row.sub_type = 1
             course_db.update_course(row)
-            notify.push_subscribe_course(course)
+            t = threading.Thread(target=notify.push_subscribe_course, args=(course,))
+            t.start()
             download_once(row)
             return Result.success(None)
         else:
@@ -226,7 +257,8 @@ def add_teacher():
         sync_new_course(row)
         return Result.success(None)
     teacher = teacher_db.add_teacher(teacher)
-    notify.push_subscribe_teacher(teacher)
+    t = threading.Thread(target=notify.push_subscribe_teacher, args=(teacher,))
+    t.start()
     sync_new_course(teacher)
     return Result.success(None)
 

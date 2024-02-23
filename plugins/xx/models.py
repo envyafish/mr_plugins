@@ -103,6 +103,9 @@ class Config(Base):
     auto_sub: int = Column(Integer)
     emby_folders: str = Column(Text)
     plex_titles: str = Column(Text)
+    fsm_token: str = Column(String(255))
+    fsm_passkey: str = Column(String(255))
+    fsm_salt: str = Column(String(255))
 
     def __init__(self, data: Dict):
         dict_trans_obj(data, self)
