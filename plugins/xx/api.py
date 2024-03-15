@@ -224,7 +224,8 @@ def add_course():
     course.status = 1
     course.sub_type = 1
     course = course_db.add_course(course)
-    notify.push_subscribe_course(course)
+    t = threading.Thread(target=notify.push_subscribe_course, args=(course,))
+    t.start()
     download_once(course)
     return Result.success(None)
 
