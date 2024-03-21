@@ -112,13 +112,13 @@ def download_thread(course):
                     Logger.error(f"下载课程:添加番号{course.code}下载失败")
         else:
             if config.fsm_token:
-                Logger.error("开始从飞天拉面神教搜索可下载的课程")
-                fsm = FSM(config.fsm_token, config.fsm_passkey, config.fsm_salt)
+                Logger.info("开始从飞天拉面神教搜索可下载的课程")
+                fsm = FSM(config.fsm_token, config.fsm_passkey)
                 data = fsm.search(type=MediaType.AV, keyword=course.code, page=1)
                 list = data['data']['list']
-                Logger.error(list)
+                Logger.info(list)
                 if list:
-                    Logger.error(f"飞天拉面神教搜索到番号{course.code}的课程,开始下载")
+                    Logger.info(f"飞天拉面神教搜索到番号{course.code}的课程,开始下载")
                     tid = list[0]['tid']
                     torrent = Torrent({})
                     torrent.size_mb = float(round(list[0]['fileRawSize'] / 1024 / 1024, 2))
@@ -134,6 +134,7 @@ def download_thread(course):
                             notify.push_downloading(course, torrent)
                         else:
                             Logger.error(f"下载课程:添加番号{course.code}下载失败")
+
 
     else:
         Logger.error(f"下载课程:番号{course.code}不存在数据库")
