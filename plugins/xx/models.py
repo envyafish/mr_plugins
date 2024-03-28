@@ -106,6 +106,7 @@ class Config(Base):
     fsm_token: str = Column(String(255))
     fsm_passkey: str = Column(String(255))
     fsm_salt: str = Column(String(255))
+    mteam_api_key: str = Column(String(255))
 
     def __init__(self, data: Dict):
         dict_trans_obj(data, self)

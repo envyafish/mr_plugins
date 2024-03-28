@@ -154,11 +154,33 @@ class Site:
             user_agent = site.user_agent
             cookie_dict = str_cookies_to_dict(cookie)
             headers = {'cookie': cookie, 'Referer': domain}
+            if site.site_id == 'mteam':
+                if not self.config.mteam_api_key:
+                    Logger.error("请先配置mteam的api_key")
+                    return None
+                download_url = self.get_mteam_download_url(site.domain, torrent.download_url)
+                if download_url:
+                    torrent.download_url = download_url
+                    headers['x-api-key'] = self.config.mteam_api_key
+                else:
+                    Logger.error("获取mteam下载链接失败")
+                    return None
             if user_agent:
                 headers['User-Agent'] = user_agent
+            Logger.info(torrent.download_url)
             res = requests.get(torrent.download_url, cookies=cookie_dict, headers=headers)
             torrent_path = f'/data/xx_torrents/{code}.torrent'
             with open(torrent_path, 'wb') as torrent:
                 torrent.write(res.content)
                 torrent.flush()
             return torrent_path
+
+    def get_mteam_download_url(self, domain, id):
+        headers = {
+            'x-api-key': self.config.mteam_api_key
+        }
+        res = requests.post(f'{domain}api/torrent/genDlToken', headers=headers, data={'id': id})
+        data = res.json()
+        if data['message'] == 'SUCCESS':
+            return data['data']
+        return None

@@ -27,6 +27,7 @@ class DB:
         self.check_and_create_column('config', 'fsm_token', 'varchar(255)')
         self.check_and_create_column('config', 'fsm_passkey', 'varchar(255)')
         self.check_and_create_column('config', 'fsm_salt', 'varchar(255)')
+        self.check_and_create_column('config', 'mteam_api_key', 'varchar(255)')
 
     def check_and_create_column(self, table_name, column_name, column_definition):
         # 连接到 SQLite 数据库
